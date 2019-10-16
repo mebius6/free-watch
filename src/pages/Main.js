@@ -19,22 +19,12 @@ function MyBody(props) {
 export default class Main extends Component {
   constructor(props) {
     super(props)
-    const dataSource = new ListView.DataSource({
-      rowHasChanged: (row1, row2) => row1 !== row2
-    })
+
     this.state = {
       checkedTab: '首页',
       hidden: false,
       fullScreen: false,
-      tabBarList: [],
-      tabsList: [],
-      dataSource,
-      pageIndex: 1,
-      refreshing: true,
-      loading: true,
-      useBodyScroll: false,
-      listViewHeight: 0,
-      hasMore: true
+      tabBarList: []
     }
   }
   componentDidMount() {
@@ -43,9 +33,9 @@ export default class Main extends Component {
   getMenuList(params = { m: 'vod-index.html' }) {
     window.mw.api.getList(params).then(
       res => {
-        let { tabBarList } = this.state
+        let { checkedTab, tabBarList } = this.state
         tabBarList = res.header.map(v => {
-          return {
+          let obj = {
             title: v.content,
             key: v.content,
             tabsList: v.slide.map(item => {
@@ -54,6 +44,8 @@ export default class Main extends Component {
             }),
             params: v.params
           }
+
+          return obj
         })
         this.setState({ tabBarList })
         console.log(['res', res])
@@ -64,91 +56,19 @@ export default class Main extends Component {
     )
   }
 
-  /**
-   * 切换tabs
-   */
-  tabsClickItem = val => {
-    this.setState(
-      {
-        dataSource: new ListView.DataSource({
-          rowHasChanged: (row1, row2) => row1 !== row2
-        }),
-        checkedTab: val.title,
-        pageIndex: 1,
-        checkedList: [],
-        list: []
-      },
-      () => {
-        Toast.loading('loading...', 1, async () => {
-          let list = (await this.getList()) || []
-          this.setState(
-            {
-              dataSource: this.state.dataSource.cloneWithRows(list),
-              refreshing: false,
-              loading: false,
-              list
-            },
-            () => {
-              this.getListHeight()
-            }
-          )
-        })
-      }
-    )
-  }
-  /**
-   * 获得list容器高度
-   */
-  getListHeight() {
-    let clientHeight = document.documentElement.clientHeight
-    let navHeight = document.querySelectorAll('.am-navbar')[0].offsetHeight
-    let tabHeight = document.querySelectorAll('.mw-com-tabs')[0].offsetHeight
-    let hei = clientHeight - navHeight - tabHeight
-    this.setState({
-      listViewHeight: hei
-    })
-  }
   renderContent = item => {
     switch (item.title) {
       case '首页':
-        return <Home data={item}></Home>
+        return <Home params={item.params}></Home>
       case '电影':
-        return <Film data={item}></Film>
+        return <Film params={item.params}></Film>
       case '连续剧':
-        return <TvSeries data={item}></TvSeries>
+        return <TvSeries params={item.params}></TvSeries>
       case '综艺':
-        return <Variety data={item}></Variety>
+        return <Variety params={item.params}></Variety>
       case '动漫':
-        return <Anime data={item}></Anime>
+        return <Anime params={item.params}></Anime>
     }
-    // return (
-    //   <Fragment>
-    //     {/* <NavBar
-    //       mode="dark"
-    //       icon={<Icon type="left" />}
-    //       onLeftClick={() => this.props.history.go(-1)}
-    //       rightContent={[
-    //         <Icon
-    //           key="0"
-    //           type="search"
-    //           size="xs"
-    //           style={{ marginRight: '16px' }}
-    //         />,
-    //         <Icon key="1" type="cross-circle" size="xs" onClick={() => {}} />
-    //       ]}
-    //     >
-    //       {item.title}
-    //     </NavBar>
-    //     {item.tabsList.length ? (
-    //       <NavTabs
-    //         tabsList={item.tabsList}
-    //         page={4}
-    //         activeIndex={0}
-    //         tabsClickItem={this.tabsClickItem}
-    //       ></NavTabs>
-    //     ) : null} */}
-    //   </Fragment>
-    // )
   }
   renderItem = (item, index) => {
     return (
