@@ -1,0 +1,71 @@
+@mw-white1-color: #fafafa;
+@mw-orange-color: #ed976a;
+.free-watch {
+  touch-action: pan-y;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  z-index: 1;
+
+  .am-list-view-scrollview {
+    padding-top: 80px !important;
+    flex: 1;
+    padding-bottom: 80px !important;
+    touch-action: pan-y;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+    .free-watch-list {
+      height: 100%;
+      width: 100%;
+      .am-card {
+        width: 100vw;
+        box-sizing: border-box;
+        touch-action: pan-y;
+        padding-left: 20px;
+        padding-right: 15px;
+        &:not(:first-child) {
+          border-bottom: none;
+        }
+
+        .am-card-body {
+          padding-left: 0;
+          padding-right: 0;
+          width: 100%;
+        }
+      }
+      .am-list-view-scrollview {
+        height: 100%;
+        width: 100%;
+        .am-card-body {
+          padding-left: 0;
+          &.bysales-card-body-pending {
+            background-color: @mw-white1-color;
+          }
+        }
+      }
+      .am-list-view-scrollview {
+        height: 100%;
+        overflow-x: hidden !important;
+        .am-card-body {
+          padding-left: 0;
+          &.bysales-card-body-pending {
+            background-color: @mw-white1-color;
+            .mw-com-good-text {
+              max-width: 100vw;
+            }
+          }
+        }
+      }
+
+      // 下拉组件
+      .am-pull-to-refresh-content-wrapper {
+        .am-pull-to-refresh-content {
+          min-height: 300px;
+        }
+      }
+    }
+  }
+}

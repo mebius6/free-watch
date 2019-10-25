@@ -1,8 +1,16 @@
 import React, { Component, Fragment } from 'react'
-import { NavBar, Icon, PullToRefresh, Toast, ListView } from 'antd-mobile'
+import {
+  NavBar,
+  SearchBar,
+  Icon,
+  List,
+  PullToRefresh,
+  Toast,
+  ListView
+} from 'antd-mobile'
 import { NavTabs } from '@/components'
 function MyBody(props) {
-  return <div className="sale-purchase-common-list">{props.children}</div>
+  return <div className="free-watch-list">{props.children}</div>
 }
 
 export default class Home extends Component {
@@ -13,7 +21,7 @@ export default class Home extends Component {
     })
     this.params = this.props.params
     this.state = {
-      tabsList: [],
+      tabsList: this.props.tabsList,
       dataSource,
       pageIndex: 1,
       list: [],
@@ -24,42 +32,13 @@ export default class Home extends Component {
       hasMore: true
     }
   }
-  // 列表api
-  getListApi(param = {}) {
-    let vm = this
-    let params = {
-      currentPage: 1,
-      orderType: 'Sale',
-      orderCategory: 'OrderCategory_Autonomous_Pricing_Order',
-      supplierEnterpriseId: '', //客户
-      merchandiseId: '', //商品id
-      classId: '',
-      brandId: '',
-      startTime: '',
-      endTime: '',
-      pageSize: vm.state.pageSize
-    }
-    const { checkedTab } = vm.state
-    if (vm.perRel.perSearchRel.check) {
-      params.rel = vm.perRel.perSearchRel.rel
-    }
-    if (checkedTab === '待审批') {
-      params.pendingFlag = false
-      params.orderStatus = 'PENDING_REVIEW_ORDER_STATUS'
-      Object.assign(params, param)
-    }
-    if (checkedTab === '已批准') {
-      params.orderStatusArray = vm.statusList.map(v => v.value)
-      Object.assign(params, param)
-    }
 
-    if (checkedTab === '已失效') {
-      params.orderStatus = 'INVALID_ORDER_STATUS'
-      Object.assign(params, param)
-    }
-    this.renderFooterBtn()
-    Object.assign(params, param)
-    return window.mw.api.sale.saleorder.getOrderInfo(params)
+  componentDidMount() {
+    this.getOrderList()
+  }
+  // 列表api
+  getListApi(params) {
+    return window.app.api.getList(params)
   }
 
   //获取列表数据 返回list
@@ -67,15 +46,7 @@ export default class Home extends Component {
     let vm = this
     return this.getListApi(params).then(
       res => {
-        let itemList = res.itemList
-
-        if (!Array.isArray(itemList) || !itemList.length) {
-          this.setState({ hasMore: false })
-          return []
-        }
-        let hasMore = res.currentPage < res.totalPage ? true : false
-        this.setState({ hasMore, loading: false })
-        return itemList
+        return res.body
       },
       err => {
         vm.setState({
@@ -103,6 +74,37 @@ export default class Home extends Component {
         }
       )
     })
+  }
+  /**
+   * 根据关键词 搜索列表
+   *
+   */
+  searchListByWords = val => {
+    let params = {
+      wd: val,
+      submit: 'search'
+    }
+    let vm = this
+    window.app.api.searchList(params).then(
+      res => {
+        console.log(['res', res])
+        vm.setState(
+          {
+            dataSource: vm.state.dataSource.cloneWithRows(res),
+            refreshing: false,
+            loading: false,
+            list: res,
+            pageIndex: 1
+          },
+          () => {
+            vm.getListHeight()
+          }
+        )
+      },
+      err => {
+        Toast.info(err, 1)
+      }
+    )
   }
 
   /**
@@ -140,7 +142,7 @@ export default class Home extends Component {
     if (!vm.state.hasMore) {
       return false
     }
-
+    // m=vod-index-pg-2
     vm.setState(
       {
         loading: true,
@@ -149,7 +151,8 @@ export default class Home extends Component {
       async () => {
         let list = [
           ...vm.state.list,
-          ...((await vm.getList({ currentPage: vm.state.pageIndex })) || [])
+          ...((await vm.getList({ m: `vod-index-pg-${vm.state.pageIndex}` })) ||
+            [])
         ]
         vm.setState({
           dataSource: vm.state.dataSource.cloneWithRows(list),
@@ -197,24 +200,44 @@ export default class Home extends Component {
    */
   getListHeight() {
     let clientHeight = document.documentElement.clientHeight
-    let navHeight = document.querySelectorAll('.am-navbar')[0].offsetHeight
-    let tabHeight = document.querySelectorAll('.mw-com-tabs')[0].offsetHeight
+    let navHeight = 0
+    if (document.querySelectorAll('.free-watch-navbar')) {
+      navHeight = document.querySelectorAll('.free-watch-navbar')[0]
+        .offsetHeight
+    }
+
+    let tabHeight = 0
+    // if (document.querySelectorAll('.mw-com-tabs')) {
+    //   tabHeight = document.querySelectorAll('.mw-com-tabs')[0].offsetHeight
+    // }
     let hei = clientHeight - navHeight - tabHeight
     this.setState({
       listViewHeight: hei
     })
   }
   renderListView = (rowData, sectionID, rowID) => {
-    console.log(rowData, sectionID, rowID)
+    console.log(['rowData', rowData])
+    return (
+      <List
+        key={`${sectionID}-${rowID}`}
+        renderHeader={() => rowData.time}
+        onClick={() => {
+          // this.getListItemDetail(rowData.params)
+        }}
+      >
+        <List.Item extra={`${rowData.sort}`}>{rowData.content}</List.Item>
+      </List>
+    )
   }
   render() {
     let { list, tabsList, dataSource, loading } = this.state
     let renderRow = this.renderListView
     return (
-      <Fragment>
+      <div className={'free-watch'}>
         <NavBar
           mode="dark"
           icon={<Icon type="left" />}
+          className={'free-watch-navbar'}
           onLeftClick={() => this.props.history.go(-1)}
         >
           首页
@@ -227,6 +250,10 @@ export default class Home extends Component {
             tabsClickItem={this.tabsClickItem}
           ></NavTabs>
         ) : null}
+        <SearchBar
+          placeholder="100万部影片任你搜索"
+          onSubmit={this.searchListByWords}
+        />
         <ListView
           ref={el => (this.lv = el)}
           dataSource={dataSource}
@@ -248,10 +275,10 @@ export default class Home extends Component {
           scrollRenderAheadDistance={500}
           style={{ height: this.state.listViewHeight }}
           onEndReachedThreshold={1000}
-          pageSize={20}
+          pageSize={50}
           onEndReached={this.onEndReached}
         />
-      </Fragment>
+      </div>
     )
   }
 }

@@ -5,7 +5,7 @@ import '@/styles/main.less'
 import api from './api'
 import http from './services/http'
 import unit from './services/unit'
-window.mw = {
+window.app = {
   http,
   api,
   unit

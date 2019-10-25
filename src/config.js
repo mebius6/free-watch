@@ -13,7 +13,7 @@ const whitelist = [
 // 服务接口地址
 const services = {
   commonBase: {
-    url: 'http://localhost',
+    url: 'http://106.54.126.67',
     port: 5000
   }
 }
