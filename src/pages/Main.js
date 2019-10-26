@@ -1,5 +1,4 @@
 import React, { Component, Fragment } from 'react'
-import { Switch, Route } from 'react-router-dom'
 import { TabBar } from 'antd-mobile'
 import { Icons } from '@/components'
 import '../assets/css/base.less'
@@ -66,6 +65,12 @@ export default class Main extends Component {
   }
 
   renderContent = item => {
+    //   <Router>
+    //   <Switch>
+    //     {pages}
+    //     <Route component={NotFound} />
+    //   </Switch>
+    // </Router>
     switch (item.title) {
       case '首页':
         return <Home params={item.params} tabsList={item.tabsList}></Home>

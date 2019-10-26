@@ -102,7 +102,7 @@ export default class NavTabs extends Component {
   render() {
     let { activeIndex } = this.state
     return (
-      <div className="mw-com-tabs">
+      <div className="free-watch-tabs">
         <div className="nav-tabs">
           {this.state.tabsList.map((item, index) => (
             <div
@@ -121,7 +121,7 @@ export default class NavTabs extends Component {
           ))}
           <span className="nav-tabs-move" style={this.state.moveClass} />
         </div>
-        <div className="mw-com-list">
+        <div className="free-watch-list">
           {this.props.children && this.props.children[activeIndex]}
         </div>
       </div>

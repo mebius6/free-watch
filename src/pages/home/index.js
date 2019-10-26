@@ -201,22 +201,34 @@ export default class Home extends Component {
   getListHeight() {
     let clientHeight = document.documentElement.clientHeight
     let navHeight = 0
-    if (document.querySelectorAll('.free-watch-navbar')) {
+    if (document.querySelectorAll('.free-watch .free-watch-navbar')) {
       navHeight = document.querySelectorAll('.free-watch-navbar')[0]
         .offsetHeight
     }
 
     let tabHeight = 0
-    // if (document.querySelectorAll('.mw-com-tabs')) {
-    //   tabHeight = document.querySelectorAll('.mw-com-tabs')[0].offsetHeight
-    // }
-    let hei = clientHeight - navHeight - tabHeight
+    if (this.state.tabsList.length) {
+      tabHeight = document.querySelectorAll('.free-watch .free-watch-tabs')[0]
+        .offsetHeight
+    }
+    let tabbarHeight = 0
+    if (document.querySelectorAll('.am-tabs-tab-bar-wrap')) {
+      tabbarHeight = document.querySelectorAll('.am-tabs-tab-bar-wrap')[0]
+        .offsetHeight
+    }
+    let searchBarHeight = 0
+    if (document.querySelectorAll('.am-search')) {
+      searchBarHeight = document.querySelectorAll('.am-search')[0].offsetHeight
+    }
+    let hei =
+      clientHeight - navHeight - tabHeight - tabbarHeight - searchBarHeight
+    console.log(['hei', hei])
     this.setState({
       listViewHeight: hei
     })
   }
   renderListView = (rowData, sectionID, rowID) => {
-    console.log(['rowData', rowData])
+    // console.log(['rowData', rowData])
     return (
       <List
         key={`${sectionID}-${rowID}`}
@@ -225,7 +237,9 @@ export default class Home extends Component {
           // this.getListItemDetail(rowData.params)
         }}
       >
-        <List.Item extra={`${rowData.sort}`}>{rowData.content}</List.Item>
+        <List.Item extra={`${rowData.sort}`} arrow="horizontal">
+          {rowData.content}
+        </List.Item>
       </List>
     )
   }
